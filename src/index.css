@@ -2,3 +2,99 @@
     padding-top: 7px;
 
 }
+.logo {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    background-color: transparent;
+    transition: all 0.2s ease;
+}
+
+.logo.collapsed {
+    padding: 0;
+    justify-content: center;
+}
+
+/* Sider & Menu Structural Customizations */
+.ant-layout-sider {
+    background: #ffffff !important;
+    border-inline-end: none !important;
+}
+
+.ant-menu-inline {
+    border-inline-end: none !important;
+    padding: 0 8px !important;
+}
+
+/* Menu Items custom layout and spacing */
+.ant-menu-light.ant-menu-inline .ant-menu-item {
+    height: 44px !important;
+    margin: 4px 0 !important;
+    background-color: transparent !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 16px !important;
+    transition: all 0.2s ease;
+}
+
+/* Hide default indicators */
+.ant-menu-light.ant-menu-inline .ant-menu-item::after {
+    border-right: none !important;
+}
+
+/* Link Styles */
+.ant-menu-light.ant-menu-inline .ant-menu-item a {
+    color: #4b5563 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    transition: color 0.2s ease;
+}
+
+/* Icons styling inside Menu Items */
+.ant-menu-light.ant-menu-inline .ant-menu-item .ant-menu-item-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 20px !important;
+    height: 20px !important;
+    color: #4b5563 !important;
+    font-size: 20px !important;
+    margin-right: 12px !important;
+    transition: all 0.2s ease;
+}
+
+/* Hover state: light gray background */
+.ant-menu-light.ant-menu-inline .ant-menu-item:hover {
+    background-color: #f3f4f6 !important;
+}
+.ant-menu-light.ant-menu-inline .ant-menu-item:hover a {
+    color: #1f2937 !important;
+}
+.ant-menu-light.ant-menu-inline .ant-menu-item:hover .ant-menu-item-icon {
+    color: #1f2937 !important;
+}
+
+/* Selected/Active menu item: soft orange background */
+.ant-menu-light.ant-menu-inline .ant-menu-item-selected {
+    background-color: #ffebe5 !important;
+}
+
+.ant-menu-light.ant-menu-inline .ant-menu-item-selected a {
+    color: #ff5533 !important;
+    font-weight: 600 !important;
+}
+
+.ant-menu-light.ant-menu-inline .ant-menu-item-selected .ant-menu-item-icon {
+    color: #ff5533 !important;
+}
+
+/* Selected item hover state retains orange details */
+.ant-menu-light.ant-menu-inline .ant-menu-item-selected:hover {
+    background-color: #ffdcd2 !important;
+}
+.ant-menu-light.ant-menu-inline .ant-menu-item-selected:hover a,
+.ant-menu-light.ant-menu-inline .ant-menu-item-selected:hover .ant-menu-item-icon {
+    color: #ff5533 !important;
+}

@@ -1,0 +1,15 @@
+import type { User } from "../store";
+export const usePermission = () => {
+    const allowedRoles = ["tenant-admin", "manager"];
+    const _hasPermission = (user: User | null) =>{
+        if (user) {
+            return allowedRoles.includes(user.Role);
+        }
+        return false;
+
+    };
+
+    return {isAllowed: _hasPermission};
+
+
+}

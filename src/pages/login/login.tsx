@@ -1,18 +1,67 @@
-import { Layout, Card, Space, Form, Input, Checkbox, Button, Flex } from "antd";
+import { Layout, Card, Space, Form, Input, Checkbox, Button, Flex, Alert } from "antd";
 import { LockFilled, LockOutlined, UserOutlined } from "@ant-design/icons"
 import { Logo } from "../../icons/logo"
-const Login = () => {
-    return (
-        // <div>
-        //     <h1>LoginPage</h1>
-        //     <input type="text" placeholder='Username' />
-        //     <input type="password" placeholder='Password' />
-        //     <label htmlFor="remember me">Remember me</label>
-        //     <input type="checkbox" id='remember me' />
-        //     <a href="#" >Forgot Password</a>
-        //     <button>Log in</button>
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type { Credential } from "../../types";
+import { getSelf, login, logout } from "../../http/api";
+import { data } from "react-router-dom";
+import { useAuthStore } from "../../store";
+import { usePermission } from "../../hooks/usePermission";
 
-        // </div>
+const loginUser = async(userData: Credential) => {
+    // Server Call Logic
+    const { data }  = await login(userData);
+    return data;
+
+}
+
+const getself = async () => {
+    const {data} = await getSelf();
+    return data
+}
+
+const Login = () => {
+    const { setUser,logout: logoutFromStore } = useAuthStore();
+    const { isAllowed} = usePermission();
+  
+
+
+    const { data: selfData, refetch } = useQuery({
+        queryKey: ["self"],
+        queryFn: getself,
+        enabled: false,
+    })
+
+
+    const { mutate, isPending, isError, error } = useMutation({
+        mutationKey: ['Login'],
+        mutationFn: loginUser,
+        onSuccess: async () =>{
+            // call /self endpoint
+            const { data: fetchedSelfData } = await refetch();
+            console.log("UserData", fetchedSelfData);
+
+            // Logout or redirect to client Ui
+            if (!isAllowed(fetchedSelfData)){
+                await logout();
+                logoutFromStore();
+                return;
+
+            }
+
+
+
+            // Store in the State
+            setUser(fetchedSelfData)
+
+            console.log("Logged in successfully")
+            // Navigate to Dashboard
+            
+        },
+
+
+    })
+    return (
 
         <>
 
@@ -26,7 +75,7 @@ const Login = () => {
                     }
                 }>
 
-                <Space direction="vertical" align="center" size={"large"}>
+                <Space orientation="vertical" align="center" size={"large"}>
                     <Layout.Content style={{
                         display: "Flex",
                         justifyContent: "center",
@@ -45,8 +94,8 @@ const Login = () => {
                         }}
 
 
-                        bordered={
-                            false
+                        variant={
+                            "borderless"
                         }
                         title={
                             <Space style={{
@@ -64,7 +113,21 @@ const Login = () => {
                         <Form initialValues={{
                             remember: true,
 
+                        }}
+                        onFinish={(values) => {
+                            mutate({email: values.username,password: values.password, Role: "tenant-admin"});
                         }}>
+
+                            {
+                                isError && (
+                                    <Alert 
+                                    style={{
+                                        marginBottom: "10px"
+                                    }}
+                                    
+                                    type="error" title={error?.message} showIcon />
+                                )
+                            }
                             <Form.Item name="username" rules={[
                                 {
                                     required: true,
@@ -76,7 +139,7 @@ const Login = () => {
                                 }
 
                             ]}>
-                                <Input prefix={<UserOutlined />} placeholder="Username"></Input>
+                                <Input prefix={<UserOutlined />} placeholder="UserEmail"></Input>
                             </Form.Item>
 
                             <Form.Item name="password" rules={[
@@ -106,7 +169,8 @@ const Login = () => {
                                     htmlType="submit"
                                     style={{
                                         width: "100%"
-                                    }}>Log in</Button>
+                                    }}
+                                    loading={isPending}>Log in</Button>
 
                             </Form.Item>
 
