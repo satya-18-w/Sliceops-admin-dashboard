@@ -3,13 +3,17 @@ import { devtools } from "zustand/middleware";
 
 export interface User {
     id: string;
-    Name: string;
-    Email: string;
-    Role: string;
-    TenantID: string;
+    name: string;
+    email: string;
+    role: string;
+    tenant: TenantInfo;
 
 }
 
+interface TenantInfo {
+    id: string;
+    name: string;
+}
 
 interface AuthState {
     user: null | User;

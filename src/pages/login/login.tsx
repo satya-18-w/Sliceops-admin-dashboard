@@ -7,6 +7,7 @@ import { getSelf, login, logout } from "../../http/api";
 import { data } from "react-router-dom";
 import { useAuthStore } from "../../store";
 import { usePermission } from "../../hooks/usePermission";
+import { useLogoutUser } from "../../hooks/useLogoutUser";
 
 const loginUser = async(userData: Credential) => {
     // Server Call Logic
@@ -21,8 +22,9 @@ const getself = async () => {
 }
 
 const Login = () => {
-    const { setUser,logout: logoutFromStore } = useAuthStore();
+ 
     const { isAllowed} = usePermission();
+    const { setUser } = useAuthStore();
   
 
 
@@ -31,7 +33,7 @@ const Login = () => {
         queryFn: getself,
         enabled: false,
     })
-
+    const { logoutMutate } = useLogoutUser(); 
 
     const { mutate, isPending, isError, error } = useMutation({
         mutationKey: ['Login'],
@@ -40,11 +42,12 @@ const Login = () => {
             // call /self endpoint
             const { data: fetchedSelfData } = await refetch();
             console.log("UserData", fetchedSelfData);
+            
 
             // Logout or redirect to client Ui
             if (!isAllowed(fetchedSelfData)){
-                await logout();
-                logoutFromStore();
+                logoutMutate();
+             
                 return;
 
             }
@@ -115,7 +118,7 @@ const Login = () => {
 
                         }}
                         onFinish={(values) => {
-                            mutate({email: values.username,password: values.password, Role: "tenant-admin"});
+                            mutate({email: values.username,password: values.password, role: "tenant-admin"});
                         }}>
 
                             {

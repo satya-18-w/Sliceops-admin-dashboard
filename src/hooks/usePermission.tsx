@@ -3,7 +3,7 @@ export const usePermission = () => {
     const allowedRoles = ["tenant-admin", "manager"];
     const _hasPermission = (user: User | null) =>{
         if (user) {
-            return allowedRoles.includes(user.Role);
+            return allowedRoles.includes(user.role);
         }
         return false;
 
@@ -12,4 +12,4 @@ export const usePermission = () => {
     return {isAllowed: _hasPermission};
 
 
-}
+};
