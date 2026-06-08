@@ -4,9 +4,7 @@ import {
   Card,
   Col,
   Flex,
-  List,
   Row,
-  Skeleton,
   Space,
   Statistic,
   Tag,
@@ -160,7 +158,7 @@ const HomePage = () => {
               value={12480}
               precision={2}
               prefix="₹"
-              valueStyle={{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}
+              styles={{content:{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}}
             />
             <div style={{ marginTop: '8px' }}>
               <Tag color="success" icon={<ArrowUpOutlined />}>12.4%</Tag>
@@ -173,7 +171,7 @@ const HomePage = () => {
             <Statistic
               title={<span style={{ color: '#6b7280', fontWeight: 500 }}>Total Orders</span>}
               value={89}
-              valueStyle={{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}
+              styles={{content:{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}}
             />
             <div style={{ marginTop: '8px' }}>
               <Tag color="success" icon={<ArrowUpOutlined />}>8.2%</Tag>
@@ -188,7 +186,7 @@ const HomePage = () => {
               value={140.22}
               precision={2}
               prefix="₹"
-              valueStyle={{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}
+              styles={{content:{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}}
             />
             <div style={{ marginTop: '8px' }}>
               <Tag color="error" icon={<ArrowDownOutlined />}>1.5%</Tag>
@@ -201,7 +199,7 @@ const HomePage = () => {
             <Statistic
               title={<span style={{ color: '#6b7280', fontWeight: 500 }}>Active Promos</span>}
               value={5}
-              valueStyle={{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}
+              styles={{content:{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}}
             />
             <div style={{ marginTop: '8px' }}>
               <Tag color="warning">2 Expiring soon</Tag>
@@ -367,9 +365,9 @@ const HomePage = () => {
                     <Progress
                       percent={item.percentage}
                       strokeColor={item.color}
-                      trailColor="#f3f4f6"
+                      railColor="#f3f4f6"
                       showInfo={false}
-                      strokeWidth={8}
+                      size={{ height: 8 }}
                     />
                   </div>
                 ))}
@@ -408,40 +406,44 @@ const HomePage = () => {
             className="dashboard-card"
             title={<CardTitle title="Recent Incoming Orders" PrefixIcon={BasketIcon} />}
           >
-            <List
-              dataSource={ordersList}
-              renderItem={(item) => {
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {ordersList.map((item, index) => {
                 let tagColor = 'orange';
                 if (item.status === 'on the way') tagColor = 'blue';
                 if (item.status === 'delivered') tagColor = 'green';
 
                 return (
-                  <List.Item style={{ padding: '16px 8px' }}>
-                    <List.Item.Meta
-                      title={
-                        <Space size="middle">
-                          <Text strong style={{ color: '#ff5533' }}>{item.id}</Text>
-                          <Text strong>{item.OrderSummary}</Text>
-                        </Space>
-                      }
-                      description={
-                        <Space size="middle" style={{ marginTop: '4px' }}>
-                          <Text type="secondary">{item.address}</Text>
-                          <span style={{ color: '#d1d5db' }}>|</span>
-                          <Text type="secondary">{item.time}</Text>
-                        </Space>
-                      }
-                    />
+                  <div
+                    key={item.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '16px 8px',
+                      borderBottom: index < ordersList.length - 1 ? '1px solid #f3f4f6' : 'none',
+                    }}
+                  >
+                    <div>
+                      <Space size="middle">
+                        <Text strong style={{ color: '#ff5533' }}>{item.id}</Text>
+                        <Text strong style={{ color: '#1f2937' }}>{item.OrderSummary}</Text>
+                      </Space>
+                      <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
+                        <Text type="secondary" style={{ fontSize: '13px' }}>{item.address}</Text>
+                        <span style={{ color: '#d1d5db' }}>|</span>
+                        <Text type="secondary" style={{ fontSize: '13px' }}>{item.time}</Text>
+                      </div>
+                    </div>
                     <Flex gap="large" align="center">
-                      <Text strong style={{ fontSize: '15px' }}>₹{item.amount}</Text>
+                      <Text strong style={{ fontSize: '15px', color: '#1f2937' }}>₹{item.amount}</Text>
                       <Tag color={tagColor} style={{ borderRadius: '12px', padding: '2px 10px', textTransform: 'capitalize' }}>
                         {item.status}
                       </Tag>
                     </Flex>
-                  </List.Item>
+                  </div>
                 );
-              }}
-            />
+              })}
+            </div>
           </Card>
         </Col>
       </Row>

@@ -16,33 +16,60 @@ import { useLogoutUser } from '../hooks/useLogoutUser';
 
 const { Header, Content, Sider, Footer } = Layout;
 
-const items = [
-    {
-        key: "/",
-        icon: <HomeIcon />,
-        label: <NavLink to={'/'}>Home</NavLink>
-    },
-    {
-        key: "/users",
-        icon: <UsersIcon />,
-        label: <NavLink to={'/users'}>Users</NavLink>
-    },
-    {
-        key: "/restaurants",
-        icon: <RestaurantsIcon />,
-        label: <NavLink to={'/restaurants'}>Restaurants</NavLink>
-    },
-    {
-        key: "/products",
-        icon: <ProductsIcon />,
-        label: <NavLink to={'/products'}>Products</NavLink>
-    },
-    {
-        key: "/promos",
-        icon: <PromosIcon />,
-        label: <NavLink to={'/promos'}>Promos</NavLink>
+const getMenuItems = (role: string) => {
+    const items = [
+        {
+            key: "/",
+            icon: <HomeIcon />,
+            label: <NavLink to={'/'}>Home</NavLink>
+        }
+    ];
+
+    if (role === "platform-admin") {
+        items.push({
+            key: "/restaurants",
+            icon: <RestaurantsIcon />,
+            label: <NavLink to={'/restaurants'}>Restaurants</NavLink>
+        });
+        items.push({
+            key: "/users",
+            icon: <UsersIcon />,
+            label: <NavLink to={'/users'}>Users</NavLink>
+        });
+    } else if (role === "tenant-admin") {
+        items.push({
+            key: "/users",
+            icon: <UsersIcon />,
+            label: <NavLink to={'/users'}>Users</NavLink>
+        });
+        items.push({
+            key: "/products",
+            icon: <ProductsIcon />,
+            label: <NavLink to={'/products'}>Products</NavLink>
+        });
+        items.push({
+            key: "/promos",
+            icon: <PromosIcon />,
+            label: <NavLink to={'/promos'}>Promos</NavLink>
+        });
+    } else {
+        // manager/employee roles
+        items.push({
+            key: "/products",
+            icon: <ProductsIcon />,
+            label: <NavLink to={'/products'}>Products</NavLink>
+        });
+        items.push({
+            key: "/promos",
+            icon: <PromosIcon />,
+            label: <NavLink to={'/promos'}>Promos</NavLink>
+        });
     }
-]
+
+    return items;
+}
+
+
 
 const Dashboard = () => {
 
@@ -57,10 +84,12 @@ const Dashboard = () => {
     } = theme.useToken();
     const currentYear = new Date().getFullYear();
     const { user } = useAuthStore();
+
     if (user === null) {
         return <Navigate to="/auth/login" replace={true} />;
 
     }
+    const items = getMenuItems(user.role);
 
     return (
         <div>
@@ -81,13 +110,14 @@ const Dashboard = () => {
                         selectedKeys={[location.pathname]}
                         mode="inline"
                         items={items}
+
                     />
                 </Sider>
                 <Layout>
                     <Header style={{ padding: '0 16px', background: colorBgContainer }} >
                         <Flex gap="medium" align="center" justify='space-between' >
                             <Space>
-                                <Badge text={user?.tenant.name} status='success' />
+                                <Badge text={user?.role === 'platform-admin' ? 'Platform Control' : user?.tenant?.name} status='success' />
                             </Space>
                             <Space size={18}>
                                 <Badge dot={true} >

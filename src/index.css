@@ -184,4 +184,11 @@
     background-color: #ff5533 !important;
     color: white !important;
     border-color: #ff5533 !important;
+}
+
+/* Custom Large Circular Avatar Uploader */
+.avatar-uploader .ant-upload.ant-upload-select {
+    width: 140px !important;
+    height: 140px !important;
+    margin: 0 auto !important;
 }
