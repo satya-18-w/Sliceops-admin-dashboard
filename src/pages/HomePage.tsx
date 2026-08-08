@@ -1,455 +1,245 @@
-import { useState } from 'react';
-import { useAuthStore } from '../store';
+import { motion } from "framer-motion";
 import {
-  Card,
-  Col,
-  Flex,
-  Row,
-  Space,
-  Statistic,
-  Tag,
-  Typography,
-  Progress,
-  Button,
-  Badge,
-} from 'antd';
-import type { ComponentType } from 'react';
-import Icon, {
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  PlusOutlined,
-  PercentageOutlined,
-  SettingOutlined,
-  ShoppingOutlined,
-  FireOutlined,
-} from "@ant-design/icons";
-import { BarChartIcon } from '../icons/BarChartIcon';
-import BasketIcon from '../icons/BasketIcon';
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  XAxis,
+} from "recharts";
+import { Flame, IndianRupee, Package, Percent, PlusCircle, Settings2, ShoppingBag } from "lucide-react";
 
-const { Title, Text, Paragraph } = Typography;
+import { useAuthStore } from "../store";
+import { StatTile } from "@/components/stat-tile";
+import { StatusBadge } from "@/components/status-badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const ordersList = [
   {
-    id: '#ORD-9482',
-    OrderSummary: 'Pepperoni Pizza, Margherita Pizza',
-    address: 'Bandra, Mumbai',
+    id: "#ORD-9482",
+    summary: "Pepperoni Pizza, Margherita Pizza",
+    address: "Bandra, Mumbai",
     amount: 1200,
-    status: 'preparing',
-    time: '2 mins ago',
+    status: "preparing",
+    time: "2 mins ago",
   },
   {
-    id: '#ORD-9481',
-    OrderSummary: 'BBQ Chicken Pizza, Cheese Garlic Bread',
-    address: 'Balurghat, West Bengal',
+    id: "#ORD-9481",
+    summary: "BBQ Chicken Pizza, Cheese Garlic Bread",
+    address: "Balurghat, West Bengal",
     amount: 2000,
-    status: 'on the way',
-    time: '12 mins ago',
+    status: "on the way",
+    time: "12 mins ago",
   },
   {
-    id: '#ORD-9480',
-    OrderSummary: 'Farmhouse Pizza, Veggie Supreme',
-    address: 'Salt Lake, Kolkata',
+    id: "#ORD-9480",
+    summary: "Farmhouse Pizza, Veggie Supreme",
+    address: "Salt Lake, Kolkata",
     amount: 1850,
-    status: 'delivered',
-    time: '45 mins ago',
+    status: "delivered",
+    time: "45 mins ago",
   },
   {
-    id: '#ORD-9479',
-    OrderSummary: 'Mushroom & Truffle Pizza, Coke',
-    address: 'Indiranagar, Bangalore',
+    id: "#ORD-9479",
+    summary: "Mushroom & Truffle Pizza, Coke",
+    address: "Indiranagar, Bangalore",
     amount: 1450,
-    status: 'delivered',
-    time: '1 hour ago',
+    status: "delivered",
+    time: "1 hour ago",
   },
 ];
 
 const topSellingItems = [
-  { name: 'Pepperoni Supreme', percentage: 82, sales: 340, color: '#ff5533' },
-  { name: 'Classic Margherita', percentage: 68, sales: 280, color: '#ff774c' },
-  { name: 'Double Cheese Margherita', percentage: 48, sales: 195, color: '#ffa07a' },
+  { name: "Pepperoni Supreme", percentage: 82, sales: 340 },
+  { name: "Classic Margherita", percentage: 68, sales: 280 },
+  { name: "Double Cheese Margherita", percentage: 48, sales: 195 },
 ];
 
-interface CardTitleProps {
-  title: string;
-  PrefixIcon: ComponentType<unknown> | typeof Icon;
-}
+const salesData = [
+  { day: "Mon", sales: 1200, orders: 8 },
+  { day: "Tue", sales: 1800, orders: 12 },
+  { day: "Wed", sales: 1500, orders: 10 },
+  { day: "Thu", sales: 2600, orders: 19 },
+  { day: "Fri", sales: 3100, orders: 24 },
+  { day: "Sat", sales: 4800, orders: 36 },
+  { day: "Sun", sales: 4100, orders: 30 },
+];
 
-const CardTitle = ({ title, PrefixIcon }: CardTitleProps) => {
-  return (
-    <Space>
-      <Icon component={PrefixIcon} style={{ fontSize: '18px', color: '#ff5533' }} />
-      <span style={{ fontWeight: 600, fontSize: '15px', color: '#1f2937' }}>{title}</span>
-    </Space>
-  )
-}
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.06 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0 },
+};
 
 const HomePage = () => {
   const { user } = useAuthStore();
-  const time = new Date();
-  const hour = time.getHours();
+  const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
 
-  const salesData = [
-    { day: 'Mon', sales: 1200, orders: 8 },
-    { day: 'Tue', sales: 1800, orders: 12 },
-    { day: 'Wed', sales: 1500, orders: 10 },
-    { day: 'Thu', sales: 2600, orders: 19 },
-    { day: 'Fri', sales: 3100, orders: 24 },
-    { day: 'Sat', sales: 4800, orders: 36 },
-    { day: 'Sun', sales: 4100, orders: 30 },
-  ];
-
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
-  // SVG Chart Dimensions
-  const svgWidth = 500;
-  const svgHeight = 220;
-  const paddingX = 40;
-  const paddingY = 30;
-
-  const chartWidth = svgWidth - paddingX * 2;
-  const chartHeight = svgHeight - paddingY * 2;
-  const maxSales = Math.max(...salesData.map(d => d.sales));
-
-  const points = salesData.map((d, i) => {
-    const x = paddingX + (i * chartWidth) / (salesData.length - 1);
-    const y = paddingY + chartHeight - (d.sales / maxSales) * chartHeight;
-    return { x, y, ...d };
-  });
-
-  const pathD = points.reduce((acc, p, i) => {
-    return i === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`;
-  }, "");
-
-  const areaD = points.length > 0
-    ? `${pathD} L ${points[points.length - 1].x} ${paddingY + chartHeight} L ${points[0].x} ${paddingY + chartHeight} Z`
-    : "";
-
   return (
-    <div style={{ padding: '4px 8px 24px 8px' }}>
-      
-      {/* 1. Header Welcome Section (Simple & Clean) */}
-      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+    <motion.div variants={container} initial="hidden" animate="show" className="flex flex-col gap-6">
+      {/* Header */}
+      <motion.div variants={item} className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <Title level={2} style={{ margin: 0, fontWeight: 700, color: '#1f2937', letterSpacing: '-0.3px' }}>
-            {greeting}, <span style={{ color: '#ff5533' }}>{user?.name || 'Admin'}</span>! 🍕
-          </Title>
-          <Text type="secondary" style={{ fontSize: '14px', display: 'block', marginTop: '4px' }}>
-            Welcome back! You are managing the <strong style={{ color: '#4b5563' }}>{user?.tenant?.name || 'Default Store'}</strong> outlet.
-          </Text>
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-800">
+            {greeting}, <span className="text-brand-500">{user?.name || "Admin"}</span>
+          </h1>
+          <p className="mt-1 text-sm text-neutral-500">
+            Welcome back! You are managing the{" "}
+            <span className="font-semibold text-neutral-600">{user?.tenant?.name || "Default Store"}</span> outlet.
+          </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span className="pulse-badge" style={{ background: '#f0fdf4', border: '1px solid #dcfce7', color: '#16a34a' }}>
-            <span className="pulse-dot" style={{ backgroundColor: '#16a34a' }}></span>
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-success/20 bg-success-bg px-2.5 py-1 text-xs font-semibold text-success">
+            <span className="pulse-dot size-1.5 rounded-full bg-success" />
             System Live
           </span>
-          <Text type="secondary" style={{ fontSize: '12px' }}>
-            Synced: Just now
-          </Text>
+          <span className="text-xs text-neutral-400">Synced: Just now</span>
         </div>
-      </div>
+      </motion.div>
 
-      {/* 2. Key Stats Row */}
-      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="dashboard-card" variant="borderless">
-            <Statistic
-              title={<span style={{ color: '#6b7280', fontWeight: 500 }}>Total Sales</span>}
-              value={12480}
-              precision={2}
-              prefix="₹"
-              styles={{content:{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}}
-            />
-            <div style={{ marginTop: '8px' }}>
-              <Tag color="success" icon={<ArrowUpOutlined />}>12.4%</Tag>
-              <Text type="secondary" style={{ fontSize: '12px' }}> vs last week</Text>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="dashboard-card" variant="borderless">
-            <Statistic
-              title={<span style={{ color: '#6b7280', fontWeight: 500 }}>Total Orders</span>}
-              value={89}
-              styles={{content:{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}}
-            />
-            <div style={{ marginTop: '8px' }}>
-              <Tag color="success" icon={<ArrowUpOutlined />}>8.2%</Tag>
-              <Text type="secondary" style={{ fontSize: '12px' }}> vs last week</Text>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="dashboard-card" variant="borderless">
-            <Statistic
-              title={<span style={{ color: '#6b7280', fontWeight: 500 }}>Avg. Ticket Value</span>}
-              value={140.22}
-              precision={2}
-              prefix="₹"
-              styles={{content:{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}}
-            />
-            <div style={{ marginTop: '8px' }}>
-              <Tag color="error" icon={<ArrowDownOutlined />}>1.5%</Tag>
-              <Text type="secondary" style={{ fontSize: '12px' }}> vs last week</Text>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="dashboard-card" variant="borderless">
-            <Statistic
-              title={<span style={{ color: '#6b7280', fontWeight: 500 }}>Active Promos</span>}
-              value={5}
-              styles={{content:{ color: '#1f2937', fontWeight: 700, fontSize: '26px' }}}
-            />
-            <div style={{ marginTop: '8px' }}>
-              <Tag color="warning">2 Expiring soon</Tag>
-            </div>
-          </Card>
-        </Col>
-      </Row>
+      {/* Key stats */}
+      <motion.div variants={item} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatTile label="Total Sales" value="₹12,480.00" trend={{ direction: "up", label: "12.4%" }} icon={IndianRupee} />
+        <StatTile label="Total Orders" value="89" trend={{ direction: "up", label: "8.2%" }} icon={ShoppingBag} />
+        <StatTile label="Avg. Ticket Value" value="₹140.22" trend={{ direction: "down", label: "1.5%" }} icon={Package} />
+        <StatTile label="Active Promos" value="5" icon={Percent} />
+      </motion.div>
 
-      {/* 3. Analytics & Sidebars */}
-      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-        
-        {/* Sales Chart */}
-        <Col xs={24} lg={16}>
-          <Card
-            title={<CardTitle title="Sales Performance & Trends" PrefixIcon={BarChartIcon} />}
-            variant="borderless"
-            className="dashboard-card"
-            style={{ height: '100%' }}
-          >
-            <div style={{ position: 'relative', width: '100%' }}>
-              <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} width="100%" height="100%">
+      {/* Analytics row */}
+      <motion.div variants={item} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Sales Performance &amp; Trends</CardTitle>
+          </CardHeader>
+          <CardContent className="pl-1 pr-4">
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={salesData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ff5533" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#ff5533" stopOpacity="0.00" />
+                  <linearGradient id="salesFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--color-brand-500)" stopOpacity={0.25} />
+                    <stop offset="100%" stopColor="var(--color-brand-500)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-
-                {/* Grid Lines */}
-                {[0, 0.25, 0.5, 0.75, 1].map((ratio, index) => {
-                  const y = paddingY + ratio * chartHeight;
-                  return (
-                    <line
-                      key={index}
-                      x1={paddingX}
-                      y1={y}
-                      x2={svgWidth - paddingX}
-                      y2={y}
-                      stroke="#f3f4f6"
-                      strokeWidth={1}
-                      strokeDasharray="4 4"
-                    />
-                  );
-                })}
-
-                {/* Y Axis Grid Lines labels */}
-                <text x={paddingX - 8} y={paddingY + 4} fill="#9ca3af" fontSize="10" textAnchor="end">
-                  ₹{maxSales}
-                </text>
-                <text x={paddingX - 8} y={paddingY + chartHeight / 2 + 4} fill="#9ca3af" fontSize="10" textAnchor="end">
-                  ₹{Math.round(maxSales / 2)}
-                </text>
-                <text x={paddingX - 8} y={paddingY + chartHeight + 4} fill="#9ca3af" fontSize="10" textAnchor="end">
-                  ₹0
-                </text>
-
-                {/* Area under the line */}
-                <path d={areaD} fill="url(#chartGrad)" />
-
-                {/* Path line */}
-                <path d={pathD} fill="none" stroke="#ff5533" strokeWidth={3} strokeLinecap="round" />
-
-                {/* Data Points */}
-                {points.map((p, i) => (
-                  <g key={i}>
-                    {/* Invisible larger hover trigger area */}
-                    <circle
-                      cx={p.x}
-                      cy={p.y}
-                      r={15}
-                      fill="transparent"
-                      cursor="pointer"
-                      onMouseEnter={() => setHoveredIndex(i)}
-                      onMouseLeave={() => setHoveredIndex(null)}
-                    />
-                    {/* Actual visual point */}
-                    <circle
-                      cx={p.x}
-                      cy={p.y}
-                      r={hoveredIndex === i ? 6 : 4}
-                      fill={hoveredIndex === i ? '#ff5533' : '#ffffff'}
-                      stroke="#ff5533"
-                      strokeWidth={2.5}
-                      pointerEvents="none"
-                      style={{ transition: 'all 0.15s ease' }}
-                    />
-                    {hoveredIndex === i && (
-                      <circle
-                        cx={p.x}
-                        cy={p.y}
-                        r={12}
-                        fill="#ff5533"
-                        fillOpacity={0.15}
-                        pointerEvents="none"
-                      />
-                    )}
-                  </g>
-                ))}
-
-                {/* X Axis labels */}
-                {points.map((p, i) => (
-                  <text
-                    key={i}
-                    x={p.x}
-                    y={svgHeight - 10}
-                    fill="#9ca3af"
-                    fontSize="11"
-                    textAnchor="middle"
-                    fontWeight={hoveredIndex === i ? 'bold' : 'normal'}
-                  >
-                    {p.day}
-                  </text>
-                ))}
-              </svg>
-
-              {/* Tooltip Overlay */}
-              {hoveredIndex !== null && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: `${points[hoveredIndex].y - 50}px`,
-                    left: `${(points[hoveredIndex].x / svgWidth) * 100}%`,
-                    transform: 'translateX(-50%)',
-                    background: '#1f2937',
-                    color: 'white',
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-                    pointerEvents: 'none',
-                    zIndex: 10,
-                    textAlign: 'center',
-                    minWidth: '80px',
+                <CartesianGrid vertical={false} stroke="var(--color-neutral-100)" strokeDasharray="4 4" />
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: "var(--color-neutral-400)" }}
+                />
+                <RechartsTooltip
+                  cursor={{ stroke: "var(--color-brand-200)", strokeWidth: 1 }}
+                  contentStyle={{
+                    borderRadius: 8,
+                    border: "1px solid var(--color-neutral-100)",
+                    fontSize: 12,
+                    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
                   }}
-                >
-                  <div style={{ fontWeight: '600' }}>{points[hoveredIndex].day}</div>
-                  <div style={{ color: '#ffdcd2', marginTop: '2px' }}>₹{points[hoveredIndex].sales}</div>
-                  <div style={{ fontSize: '10px', opacity: 0.8 }}>{points[hoveredIndex].orders} orders</div>
-                </div>
-              )}
-            </div>
-          </Card>
-        </Col>
+                  formatter={(value) => [`₹${value}`, "Sales"]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="sales"
+                  stroke="var(--color-brand-500)"
+                  strokeWidth={2.5}
+                  fill="url(#salesFill)"
+                  activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff" }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
-        {/* Top items & Quick Controls */}
-        <Col xs={24} lg={8}>
-          <Flex vertical gap="16px" style={{ height: '100%' }}>
-            
-            {/* Top Items */}
-            <Card
-              title={<CardTitle title="Top Selling Pizzas" PrefixIcon={FireOutlined} />}
-              variant="borderless"
-              className="dashboard-card"
-              style={{ flexGrow: 1 }}
-            >
-              <Flex vertical gap="18px">
-                {topSellingItems.map((item, index) => (
-                  <div key={index}>
-                    <Flex justify="space-between" style={{ marginBottom: '6px' }}>
-                      <Text strong style={{ color: '#4b5563' }}>{item.name}</Text>
-                      <Text type="secondary">{item.sales} sold</Text>
-                    </Flex>
-                    <Progress
-                      percent={item.percentage}
-                      strokeColor={item.color}
-                      railColor="#f3f4f6"
-                      showInfo={false}
-                      size={{ height: 8 }}
+        <div className="flex flex-col gap-4">
+          <Card className="flex-1">
+            <CardHeader>
+              <CardTitle>
+                <Flame className="size-[18px] text-brand-500" />
+                Top Selling Pizzas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              {topSellingItems.map((it) => (
+                <div key={it.name}>
+                  <div className="mb-1.5 flex justify-between text-sm">
+                    <span className="font-medium text-neutral-600">{it.name}</span>
+                    <span className="text-neutral-400">{it.sales} sold</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-500 transition-all duration-500"
+                      style={{ width: `${it.percentage}%` }}
                     />
                   </div>
-                ))}
-              </Flex>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card
-              title={<CardTitle title="Quick Admin Operations" PrefixIcon={SettingOutlined} />}
-              variant="borderless"
-              className="dashboard-card"
-            >
-              <Flex vertical gap="8px">
-                <Button type="default" icon={<PlusOutlined />} className="quick-action-btn" block>
-                  Add New Pizza
-                </Button>
-                <Button type="default" icon={<PercentageOutlined />} className="quick-action-btn" block>
-                  Create Promotion Coupon
-                </Button>
-                <Button type="default" icon={<ShoppingOutlined />} className="quick-action-btn" block>
-                  Manage Outlets
-                </Button>
-              </Flex>
-            </Card>
-
-          </Flex>
-        </Col>
-
-      </Row>
-
-      {/* 4. Recent Orders Row */}
-      <Row gutter={[16, 16]}>
-        <Col span={24}>
-          <Card
-            variant="borderless"
-            className="dashboard-card"
-            title={<CardTitle title="Recent Incoming Orders" PrefixIcon={BasketIcon} />}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {ordersList.map((item, index) => {
-                let tagColor = 'orange';
-                if (item.status === 'on the way') tagColor = 'blue';
-                if (item.status === 'delivered') tagColor = 'green';
-
-                return (
-                  <div
-                    key={item.id}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '16px 8px',
-                      borderBottom: index < ordersList.length - 1 ? '1px solid #f3f4f6' : 'none',
-                    }}
-                  >
-                    <div>
-                      <Space size="middle">
-                        <Text strong style={{ color: '#ff5533' }}>{item.id}</Text>
-                        <Text strong style={{ color: '#1f2937' }}>{item.OrderSummary}</Text>
-                      </Space>
-                      <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
-                        <Text type="secondary" style={{ fontSize: '13px' }}>{item.address}</Text>
-                        <span style={{ color: '#d1d5db' }}>|</span>
-                        <Text type="secondary" style={{ fontSize: '13px' }}>{item.time}</Text>
-                      </div>
-                    </div>
-                    <Flex gap="large" align="center">
-                      <Text strong style={{ fontSize: '15px', color: '#1f2937' }}>₹{item.amount}</Text>
-                      <Tag color={tagColor} style={{ borderRadius: '12px', padding: '2px 10px', textTransform: 'capitalize' }}>
-                        {item.status}
-                      </Tag>
-                    </Flex>
-                  </div>
-                );
-              })}
-            </div>
+                </div>
+              ))}
+            </CardContent>
           </Card>
-        </Col>
-      </Row>
 
-    </div>
-  )
-}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <Settings2 className="size-[18px] text-brand-500" />
+                Quick Admin Operations
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              <Button variant="outline" className="justify-start hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600">
+                <PlusCircle className="size-4" />
+                Add New Pizza
+              </Button>
+              <Button variant="outline" className="justify-start hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600">
+                <Percent className="size-4" />
+                Create Promotion Coupon
+              </Button>
+              <Button variant="outline" className="justify-start hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600">
+                <ShoppingBag className="size-4" />
+                Manage Outlets
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </motion.div>
+
+      {/* Recent orders */}
+      <motion.div variants={item}>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <ShoppingBag className="size-[18px] text-brand-500" />
+              Recent Incoming Orders
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-neutral-100 px-0 py-0">
+            {ordersList.map((o) => (
+              <div key={o.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+                <div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="font-semibold text-brand-500">{o.id}</span>
+                    <span className="font-semibold text-neutral-800">{o.summary}</span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-3 text-xs text-neutral-500">
+                    <span>{o.address}</span>
+                    <span className="text-neutral-300">|</span>
+                    <span>{o.time}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="font-semibold text-neutral-800">₹{o.amount}</span>
+                  <StatusBadge status={o.status} />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
+  );
+};
 
 export default HomePage;

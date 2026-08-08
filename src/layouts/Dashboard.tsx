@@ -1,157 +1,151 @@
+import { useState } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Bell, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 
-import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { useAuthStore } from '../store'
-import { Avatar, Badge, Button, Dropdown, Flex, Layout, Menu, Space, theme } from 'antd';
-import { BellFilled } from '@ant-design/icons';
-import { useState } from 'react';
-import { PizzaLogo } from '../icons/PizzaLogo';
-import { HomeIcon } from '../icons/Home';
-import { UsersIcon } from '../icons/Users';
-import { RestaurantsIcon } from '../icons/Restaurants';
-import { ProductsIcon } from '../icons/Products';
-import { PromosIcon } from '../icons/Promos';
-import { useMutation } from '@tanstack/react-query';
-import { logout } from '../http/api';
-import { useLogoutUser } from '../hooks/useLogoutUser';
-
-const { Header, Content, Sider, Footer } = Layout;
-
-const getMenuItems = (role: string) => {
-    const items = [
-        {
-            key: "/",
-            icon: <HomeIcon />,
-            label: <NavLink to={'/'}>Home</NavLink>
-        }
-    ];
-
-    if (role === "platform-admin") {
-        items.push({
-            key: "/restaurants",
-            icon: <RestaurantsIcon />,
-            label: <NavLink to={'/restaurants'}>Restaurants</NavLink>
-        });
-        items.push({
-            key: "/users",
-            icon: <UsersIcon />,
-            label: <NavLink to={'/users'}>Users</NavLink>
-        });
-    } else if (role === "tenant-admin") {
-        items.push({
-            key: "/users",
-            icon: <UsersIcon />,
-            label: <NavLink to={'/users'}>Users</NavLink>
-        });
-        items.push({
-            key: "/products",
-            icon: <ProductsIcon />,
-            label: <NavLink to={'/products'}>Products</NavLink>
-        });
-        items.push({
-            key: "/promos",
-            icon: <PromosIcon />,
-            label: <NavLink to={'/promos'}>Promos</NavLink>
-        });
-    } else {
-        // manager/employee roles
-        items.push({
-            key: "/products",
-            icon: <ProductsIcon />,
-            label: <NavLink to={'/products'}>Products</NavLink>
-        });
-        items.push({
-            key: "/promos",
-            icon: <PromosIcon />,
-            label: <NavLink to={'/promos'}>Promos</NavLink>
-        });
-    }
-
-    return items;
-}
-
-
+import { useAuthStore } from "../store";
+import { useLogoutUser } from "../hooks/useLogoutUser";
+import { cn } from "@/lib/utils";
+import { AppLogo } from "@/components/layout/AppLogo";
+import { NavList } from "@/components/layout/NavList";
+import { CommandPalette } from "@/components/layout/CommandPalette";
+import { getNavItems } from "@/components/layout/nav-items";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Dashboard = () => {
+  const { logoutMutate } = useLogoutUser();
+  const location = useLocation();
+  const { user } = useAuthStore();
 
-    const { logoutMutate } = useLogoutUser();
-    // Protection
-    // If user data is in the store then user is logged in else logedout
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
-    const [collapsed, setCollapsed] = useState(false);
-    const location = useLocation();
-    const {
-        token: { colorBgContainer },
-    } = theme.useToken();
-    const currentYear = new Date().getFullYear();
-    const { user } = useAuthStore();
+  if (user === null) {
+    return <Navigate to={`/auth/login?returnTo=${location.pathname}`} replace />;
+  }
 
-    if (user === null) {
-        return <Navigate to="/auth/login" replace={true} />;
+  const items = getNavItems(user.role);
+  const initial = (user.name?.[0] ?? "U").toUpperCase();
+  const contextLabel = user.role === "platform-admin" ? "Platform Control" : user.tenant?.name;
 
-    }
-    const items = getMenuItems(user.role);
-
-    return (
-        <div>
-            <Layout style={{ minHeight: '100vh' }}>
-                <Sider theme="light" collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-                    <div className={`logo ${collapsed ? 'collapsed' : ''}`} >
-                        {collapsed ? (
-                            <PizzaLogo style={{ width: '32px', height: '32px' }} />
-                        ) : (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <PizzaLogo style={{ width: '32px', height: '32px' }} />
-                                <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#374151', letterSpacing: '0.5px' }}>PIZZA</span>
-                            </div>
-                        )}
-                    </div>
-                    <Menu
-                        theme="light"
-                        selectedKeys={[location.pathname]}
-                        mode="inline"
-                        items={items}
-
-                    />
-                </Sider>
-                <Layout>
-                    <Header style={{ padding: '0 16px', background: colorBgContainer }} >
-                        <Flex gap="medium" align="center" justify='space-between' >
-                            <Space>
-                                <Badge text={user?.role === 'platform-admin' ? 'Platform Control' : user?.tenant?.name} status='success' />
-                            </Space>
-                            <Space size={18}>
-                                <Badge dot={true} >
-                                    <BellFilled />
-                                </Badge>
-                                <Dropdown menu={{
-                                    items: [
-                                        {
-                                            key: 'logout',
-                                            label: 'Logout',
-                                            onClick: () => logoutMutate(),
-                                        }
-                                    ]
-                                }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
-                                    <Avatar style={{ backgroundColor: '#fde3cf', color: '#f56a00' }}>U</Avatar>
-
-                                </Dropdown>
-                            </Space>
-
-                        </Flex>
-                    </Header>
-                    <Content style={{ margin: '10px 16px' }}>
-
-                        <Outlet />
-                    </Content>
-                    <Footer style={{ textAlign: 'center' }}>
-                        Ant Design ©{currentYear} Created by Ant UED
-                    </Footer>
-                </Layout>
-            </Layout>
-
-
+  return (
+    <div className="flex min-h-screen bg-neutral-50">
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "hidden shrink-0 border-r border-neutral-100 bg-white transition-[width] duration-200 ease-[var(--ease-lift)] md:flex md:flex-col",
+          collapsed ? "w-[76px]" : "w-64"
+        )}
+      >
+        <div className={cn("flex h-16 items-center border-b border-neutral-100 px-4", collapsed && "justify-center px-0")}>
+          <AppLogo compact={collapsed} />
         </div>
-    )
-}
+        <div className="flex-1 overflow-y-auto py-4">
+          <NavList items={collapsed ? items.map((i) => ({ ...i, label: "" })) : items} />
+        </div>
+        <div className="border-t border-neutral-100 p-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-full justify-center"
+            onClick={() => setCollapsed((v) => !v)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <PanelLeftOpen className="size-[18px]" /> : <PanelLeftClose className="size-[18px]" />}
+          </Button>
+        </div>
+      </aside>
 
-export default Dashboard
+      {/* Mobile nav drawer */}
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetContent side="left" className="w-72 p-0">
+          <div className="flex h-16 items-center border-b border-neutral-100 px-4">
+            <AppLogo />
+          </div>
+          <div className="py-4">
+            <NavList items={items} onNavigate={() => setMobileNavOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Topbar */}
+        <header className="flex h-16 items-center gap-3 border-b border-neutral-100 bg-white px-4 md:px-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setMobileNavOpen(true)}
+            aria-label="Open navigation"
+          >
+            <Menu className="size-5" />
+          </Button>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-success/20 bg-success-bg px-2.5 py-1 text-xs font-semibold text-success">
+              <span className="pulse-dot size-1.5 rounded-full bg-success" />
+              {contextLabel}
+            </span>
+          </div>
+
+          <button
+            onClick={() => setPaletteOpen(true)}
+            className="ml-2 hidden flex-1 max-w-sm items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-400 transition-colors hover:border-neutral-300 sm:flex"
+          >
+            <Search className="size-4" />
+            Search or jump to...
+            <kbd className="ml-auto rounded border border-neutral-200 bg-white px-1.5 py-0.5 font-mono text-[10px] text-neutral-400">
+              ⌘K
+            </kbd>
+          </button>
+
+          <div className="ml-auto flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+              <Bell className="size-[18px]" />
+              <span className="absolute right-2 top-2 size-1.5 rounded-full bg-brand-500" />
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+                  <Avatar>
+                    <AvatarFallback>{initial}</AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => logoutMutate()}
+                  className="text-danger data-[highlighted]:bg-danger-bg data-[highlighted]:text-danger"
+                >
+                  <LogOut className="size-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          <Outlet />
+        </main>
+      </div>
+
+      <CommandPalette items={items} open={paletteOpen} onOpenChange={setPaletteOpen} />
+    </div>
+  );
+};
+
+export default Dashboard;

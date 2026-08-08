@@ -10,11 +10,6 @@ import { useState, useEffect } from 'react';
 
 
 
-const formItemLayout = {
-    labelCol: { span: 6 },
-    wrapperCol: { span: 18 },
-};
-
 const Users = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [editDrawerOpen, setEditDrawerOpen] = useState(false);

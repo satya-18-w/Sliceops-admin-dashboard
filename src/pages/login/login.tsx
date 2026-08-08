@@ -1,192 +1,141 @@
-import { Layout, Card, Space, Form, Input, Checkbox, Button, Flex, Alert } from "antd";
-import { LockFilled, LockOutlined, UserOutlined } from "@ant-design/icons"
-import { Logo } from "../../icons/logo"
+import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Lock, Mail } from "lucide-react";
+
 import type { Credential } from "../../types";
-import { getSelf, login, logout } from "../../http/api";
-import { data } from "react-router-dom";
+import { getSelf, login } from "../../http/api";
 import { useAuthStore } from "../../store";
 import { usePermission } from "../../hooks/usePermission";
 import { useLogoutUser } from "../../hooks/useLogoutUser";
+import { AppLogo } from "@/components/layout/AppLogo";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 
-const loginUser = async(userData: Credential) => {
-    // Server Call Logic
-    const { data }  = await login(userData);
-    return data;
-
-}
+const loginUser = async (userData: Credential) => {
+  const { data } = await login(userData);
+  return data;
+};
 
 const getself = async () => {
-    const {data} = await getSelf();
-    return data
-}
+  const { data } = await getSelf();
+  return data;
+};
 
 const Login = () => {
- 
-    const { isAllowed} = usePermission();
-    const { setUser } = useAuthStore();
-  
+  const { isAllowed } = usePermission();
+  const { setUser } = useAuthStore();
+  const { logoutMutate } = useLogoutUser();
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
 
-    const { data: selfData, refetch } = useQuery({
-        queryKey: ["self"],
-        queryFn: getself,
-        enabled: false,
-    })
-    const { logoutMutate } = useLogoutUser(); 
+  const { refetch } = useQuery({
+    queryKey: ["self"],
+    queryFn: getself,
+    enabled: false,
+  });
 
-    const { mutate, isPending, isError, error } = useMutation({
-        mutationKey: ['Login'],
-        mutationFn: loginUser,
-        onSuccess: async () =>{
-            // call /self endpoint
-            const { data: fetchedSelfData } = await refetch();
-            console.log("UserData", fetchedSelfData);
-            
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationKey: ["Login"],
+    mutationFn: loginUser,
+    onSuccess: async () => {
+      const { data: fetchedSelfData } = await refetch();
 
-            // Logout or redirect to client Ui
-            if (!isAllowed(fetchedSelfData)){
-                logoutMutate();
-             
-                return;
+      if (!isAllowed(fetchedSelfData)) {
+        logoutMutate();
+        return;
+      }
 
-            }
+      setUser(fetchedSelfData);
+    },
+  });
 
+  return (
+    <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8 px-4">
+      <AppLogo />
 
+      <Card className="w-full shadow-xl shadow-neutral-900/5">
+        <CardContent className="pt-6">
+          <div className="mb-6 flex items-center justify-center gap-2 text-[15px] font-semibold text-neutral-800">
+            <Lock className="size-4 text-brand-500" />
+            Log in to your dashboard
+          </div>
 
-            // Store in the State
-            setUser(fetchedSelfData)
+          {isError && (
+            <div className="mb-4 rounded-lg border border-danger/20 bg-danger-bg px-3 py-2 text-sm text-danger">
+              {error instanceof Error ? error.message : "Something went wrong. Please try again."}
+            </div>
+          )}
 
-            console.log("Logged in successfully")
-            // Navigate to Dashboard
-            
-        },
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              mutate({ email, password, role: "tenant-admin" });
+            }}
+          >
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="email" className="text-xs font-medium text-neutral-500">
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  placeholder="you@store.com"
+                  className="pl-9"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+            </div>
 
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="password" className="text-xs font-medium text-neutral-500">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="••••••••"
+                  className="pl-9"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            </div>
 
-    })
-    return (
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center gap-2 text-neutral-600">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  className="size-4 rounded border-neutral-300 accent-brand-500"
+                />
+                Remember me
+              </label>
+              <a href="#" className="font-medium text-brand-500 hover:text-brand-600">
+                Forgot password?
+              </a>
+            </div>
 
-        <>
-
-
-            <Layout
-                style={
-                    {
-                        height: '100vh',
-                        display: 'grid',
-                        placeItems: "center",
-                    }
-                }>
-
-                <Space orientation="vertical" align="center" size={"large"}>
-                    <Layout.Content style={{
-                        display: "Flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-
-
-                    }}>
-                        <Logo />
-
-                    </Layout.Content>
-                    <Card
-                        style={{
-                            width: 300,
-                            height: 500,
-
-                        }}
-
-
-                        variant={
-                            "borderless"
-                        }
-                        title={
-                            <Space style={{
-                                width: '100%',
-                                fontSize: 16,
-                                justifyContent: 'center',
-
-                            }}>
-                                <LockFilled />
-                                "Log in"
-                            </Space>
-
-                        }>
-
-                        <Form initialValues={{
-                            remember: true,
-
-                        }}
-                        onFinish={(values) => {
-                            mutate({email: values.username,password: values.password, role: "tenant-admin"});
-                        }}>
-
-                            {
-                                isError && (
-                                    <Alert 
-                                    style={{
-                                        marginBottom: "10px"
-                                    }}
-                                    
-                                    type="error" title={error?.message} showIcon />
-                                )
-                            }
-                            <Form.Item name="username" rules={[
-                                {
-                                    required: true,
-                                    message: "Please Enter Your Name"
-                                },
-                                {
-                                    type: "email",
-                                    message: "Enter a valid email"
-                                }
-
-                            ]}>
-                                <Input prefix={<UserOutlined />} placeholder="UserEmail"></Input>
-                            </Form.Item>
-
-                            <Form.Item name="password" rules={[
-                                {
-                                    required: true,
-                                    message: "Enter Your Pasword"
-                                },
-                                {
-                                    min: 6,
-                                    message: "Pasword at least 6 charecter"
-
-                                }
-                            ]}>
-                                <Input.Password prefix={<LockOutlined />} placeholder="Password" type="password" />
-
-                            </Form.Item>
-                            <Flex justify="space-between">
-                                <Form.Item name="remember" valuePropName="checked">
-                                    <Checkbox>Remember me</Checkbox>
-
-                                </Form.Item>
-                                <a href="#" id="login-form-forgot">Forgot Password</a>
-                            </Flex>
-                            <Form.Item  >
-                                <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    style={{
-                                        width: "100%"
-                                    }}
-                                    loading={isPending}>Log in</Button>
-
-                            </Form.Item>
-
-                        </Form>
-
-
-
-                    </Card>
-
-                </Space>
-            </Layout>
-        </>
-    )
-}
+            <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+              {isPending ? "Signing in..." : "Log in"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 export default Login;

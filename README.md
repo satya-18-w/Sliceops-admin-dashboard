@@ -1,4 +1,8 @@
-# React + TypeScript + Vite
+# admin-dashboard
+
+SliceOps' tenant-facing admin UI (React + Vite + TypeScript). See [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) for the UI design plan, design tokens, and the Ant Design → Tailwind/shadcn migration roadmap this codebase is following.
+
+## React + TypeScript + Vite (template notes)
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

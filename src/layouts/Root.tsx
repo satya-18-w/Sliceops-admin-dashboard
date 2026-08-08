@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { Outlet } from 'react-router-dom'
 import { getSelf } from '../http/api';
-import { Flex, Spin } from 'antd';
 import { useAuthStore } from '../store';
 import { useEffect } from 'react';
 import { AxiosError } from 'axios';
+import { AppLogo } from '@/components/layout/AppLogo';
 
 
 const getself = async () => {
@@ -34,11 +34,9 @@ const Root = () => {
 
     if (isLoading) {
         return (
-            <div>
-                <Flex>
-                    <p>Loading.....</p>
-
-                </Flex>
+            <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-neutral-50">
+                <AppLogo />
+                <div className="size-6 animate-spin rounded-full border-2 border-neutral-200 border-t-brand-500" />
             </div>
         )
     }
