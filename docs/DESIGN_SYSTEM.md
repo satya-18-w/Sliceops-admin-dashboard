@@ -118,7 +118,7 @@ Phased so each step is independently shippable and testable, matching how `ROADM
 - ✅ **Phase A — Foundations.** Tailwind v4 + Radix/shadcn-style primitives installed (`src/components/ui/`), tokens from §3 wired into `src/index.css` as an `@theme` block, `components.json` set up for `npx shadcn add`. antd kept running unchanged for not-yet-migrated pages (Tailwind preflight is deliberately excluded until Phase H so the two don't fight over base element styles).
 - ✅ **Phase B — App shell.** `layouts/Dashboard.tsx`, `layouts/Root.tsx`, `layouts/NonAuth.tsx`, and the login page rebuilt on the new stack: responsive sidebar with a mobile `Sheet` drawer, ⌘K command palette (`src/components/layout/CommandPalette.tsx`), avatar dropdown.
 - ✅ **Phase C — Home/KPI dashboard.** `HomePage.tsx` migrated to `StatTile`/`StatusBadge` + `recharts`, replacing the ~240-line hand-rolled inline SVG chart.
-- **Phase D — Existing pages.** Migrate Users and Tenants/Restaurants pages onto `DataTable`.
+- ✅ **Phase D — Existing pages.** Users and Restaurants pages migrated onto the plain `Table` primitive (a full sortable/paginated `DataTable` wasn't needed yet — neither page had that behavior in the antd version either; revisit if/when one does).
 - **Phase E — New: Store settings.** Build against Store's already-complete API — identity, address, business hours, delivery settings, logo upload.
 - **Phase F — New: Catalog.** Products list/detail/create, Categories, Variants/Modifiers — Catalog's API is the most complete in the platform and has zero UI today.
 - **Phase G — Orders/Promos.** Only start once Order's HTTP transport is wired (`ROADMAP.md` Phase 3), or build as an explicitly-mocked preview if wanted sooner.
