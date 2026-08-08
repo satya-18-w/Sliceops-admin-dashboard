@@ -115,9 +115,9 @@ Build these once in `src/components/ui/` (shadcn-generated) and `src/components/
 
 Phased so each step is independently shippable and testable, matching how `ROADMAP.md` phases the backend work.
 
-- **Phase A — Foundations.** Install Tailwind + shadcn/ui, wire the token table in §3 into `tailwind.config`, keep antd running unchanged everywhere. No visible change yet; this just makes the tools available.
-- **Phase B — App shell.** Rebuild `layouts/Dashboard.tsx`, `layouts/Root.tsx`, `layouts/NonAuth.tsx` and the login page on the new stack. This is the highest-leverage single migration — everything else lives inside it.
-- **Phase C — Home/KPI dashboard.** Migrate `HomePage.tsx` as the proof-of-concept: `StatTile`, real chart library, `StatusBadge`. Validates the design system against the most complex existing page before touching anything else.
+- ✅ **Phase A — Foundations.** Tailwind v4 + Radix/shadcn-style primitives installed (`src/components/ui/`), tokens from §3 wired into `src/index.css` as an `@theme` block, `components.json` set up for `npx shadcn add`. antd kept running unchanged for not-yet-migrated pages (Tailwind preflight is deliberately excluded until Phase H so the two don't fight over base element styles).
+- ✅ **Phase B — App shell.** `layouts/Dashboard.tsx`, `layouts/Root.tsx`, `layouts/NonAuth.tsx`, and the login page rebuilt on the new stack: responsive sidebar with a mobile `Sheet` drawer, ⌘K command palette (`src/components/layout/CommandPalette.tsx`), avatar dropdown.
+- ✅ **Phase C — Home/KPI dashboard.** `HomePage.tsx` migrated to `StatTile`/`StatusBadge` + `recharts`, replacing the ~240-line hand-rolled inline SVG chart.
 - **Phase D — Existing pages.** Migrate Users and Tenants/Restaurants pages onto `DataTable`.
 - **Phase E — New: Store settings.** Build against Store's already-complete API — identity, address, business hours, delivery settings, logo upload.
 - **Phase F — New: Catalog.** Products list/detail/create, Categories, Variants/Modifiers — Catalog's API is the most complete in the platform and has zero UI today.
