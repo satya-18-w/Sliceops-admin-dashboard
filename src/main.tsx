@@ -6,6 +6,7 @@ import { RouterProvider } from 'react-router-dom'
 import { router } from './router.tsx'
 import { ConfigProvider } from 'antd'
 import { QueryClient,QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from 'sonner'
 
 
 
@@ -27,6 +28,7 @@ createRoot(document.getElementById('root')!).render(
     }>
 
       <RouterProvider router={router} />
+      <Toaster richColors position="top-right" />
     </ConfigProvider>
     </QueryClientProvider>
   </StrictMode>,

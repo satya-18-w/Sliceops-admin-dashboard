@@ -13,4 +13,5 @@ export const CreateUser = (user: CreateUserBody ) => apiClient.post("/auth/users
 export const updateUser = (id: string, user: { name: string; role: string }) => apiClient.put(`/auth/users/${id}`, user);
 export const getAllTenants = () => apiClient.get("/tenants");
 export const createTenant = (tenant: { name: string; slug: string; address: string }) => apiClient.post("/tenants/register", tenant);
-export const createTenantAdmin = (user: any) => apiClient.post("/auth/users/tenant-admin", user);
+export const createTenantAdmin = (user: { name: string; email: string; password: string; role: string; tenant_id: string }) =>
+    apiClient.post("/auth/users/tenant-admin", user);

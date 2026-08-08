@@ -1,75 +1,55 @@
-import { Card, Flex, Input, Select } from "antd"
+import { Search } from "lucide-react";
 import type { ReactNode } from "react";
-
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 
 type UserFilterProps = {
   onFilterChange: (filterName: string, filterValue: string) => void;
   children?: ReactNode;
-}
+};
+
 const UserFilter = ({ onFilterChange, children }: UserFilterProps) => {
   return (
-    <Card style={{ marginBottom: 20 }}>
-      <Flex justify="space-between" align="center">
-        {/* Left Side: Search and Filters */}
-        <Flex gap="middle" align="center" style={{ flex: 1 }}>
-          <Input.Search
-            placeholder="Search users..."
-            allowClear={true}
-            style={{ maxWidth: 260 }}
-            onChange={(e) => onFilterChange("SearchQuery", e.target.value)}
-          />
+    <Card className="mb-5 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-1 flex-wrap items-center gap-3">
+          <div className="relative w-full max-w-[260px]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+            <Input
+              placeholder="Search users..."
+              className="pl-9"
+              onChange={(e) => onFilterChange("SearchQuery", e.target.value)}
+            />
+          </div>
           <Select
             defaultValue="All"
-            placeholder="Select Role"
-            style={{ width: 140 }}
-            allowClear={true}
-            onChange={(value) => onFilterChange("UserRole", value)}
-            options={[
-              {
-                value: "All",
-                label: "All Roles"
-              },
-              {
-                value: "Manager",
-                label: "Manager"
-              }, {
-                value: "Employee",
-                label: "Employee"
-              }, {
-                value: "Admin",
-                label: "Admin"
-              }
-            ]}
-          />
+            className="w-[140px]"
+            onChange={(e) => onFilterChange("UserRole", e.target.value)}
+          >
+            <option value="All">All Roles</option>
+            <option value="Manager">Manager</option>
+            <option value="Employee">Employee</option>
+            <option value="Admin">Admin</option>
+          </Select>
           <Select
-            placeholder="Select Status"
-            style={{ width: 140 }}
-            allowClear={true}
-            onChange={(value) => onFilterChange("UserStatus", value)}
-            options={[
-              {
-                value: "Active",
-                label: "Active"
-              },
-              {
-                value: "Inactive",
-                label: "Inactive"
-              }, {
-                value: "Ban",
-                label: "Ban"
-              }
-            ]}
-          />
-        </Flex>
+            defaultValue=""
+            className="w-[140px]"
+            onChange={(e) => onFilterChange("UserStatus", e.target.value)}
+          >
+            <option value="" disabled>
+              Select Status
+            </option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Ban">Ban</option>
+          </Select>
+        </div>
 
-        {/* Right Side: Action Button */}
-        <Flex gap="small" align="center">
-          {children}
-         
-        </Flex>
-      </Flex>
+        <div className="flex items-center gap-2">{children}</div>
+      </div>
     </Card>
-  )
-}
+  );
+};
 
-export default UserFilter
+export default UserFilter;
